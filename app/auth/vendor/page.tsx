@@ -189,7 +189,7 @@ function VendorAuthForm() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-[var(--color-text-muted)] mt-6">
-          Vendors must comply with Ordr's Seller Guidelines and Quality Standards
+          Vendors must comply with Ordr&apos;s Seller Guidelines and Quality Standards
         </p>
       </div>
     </div>

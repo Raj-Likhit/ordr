@@ -401,7 +401,7 @@ export function ProductClientDetail({ product, children }: { product: any, child
                     className="overflow-hidden"
                   >
                     <div className="pt-4 text-[var(--color-text-secondary)] text-[var(--text-small)]">
-                      <p>Ships directly from the artist's studio. Usually dispatches within 3-5 business days.</p>
+                      <p>Ships directly from the artist&apos;s studio. Usually dispatches within 3-5 business days.</p>
                       <p className="mt-2">Returns accepted within 14 days of delivery if the item is unused and in original condition.</p>
                     </div>
                   </motion.div>

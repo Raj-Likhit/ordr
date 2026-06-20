@@ -442,7 +442,7 @@ function BuyerAuthForm() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-[var(--color-text-muted)] mt-6">
-          By continuing, you agree to Ordr's Terms of Service and Privacy Policy
+          By continuing, you agree to Ordr&apos;s Terms of Service and Privacy Policy
         </p>
       </div>
     </div>

@@ -9,7 +9,7 @@ export default function AuthPortal() {
           Welcome to Ordr
         </h1>
         <p className="text-[var(--color-text-secondary)] text-lg md:text-xl max-w-2xl mx-auto">
-          Choose how you'd like to continue
+          Choose how you&apos;d like to continue
         </p>
       </div>
 

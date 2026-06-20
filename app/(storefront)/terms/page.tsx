@@ -11,7 +11,7 @@ export default function TermsPage() {
       <div className="space-y-8 font-body text-[var(--text-body)] text-[var(--color-text-secondary)] leading-relaxed">
         <section>
           <h2 className="font-accent text-xl uppercase tracking-wider mb-4 text-[var(--color-text-primary)]">1. Acceptance of Terms</h2>
-          <p>By accessing and using the Ordr marketplace, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using Ordr's particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
+          <p>By accessing and using the Ordr marketplace, you accept and agree to be bound by the terms and provision of this agreement. In addition, when using Ordr&apos;s particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
         </section>
 
         <section>

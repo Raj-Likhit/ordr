@@ -6,7 +6,7 @@ export default function AboutPage() {
       </h1>
       <div className="space-y-8 font-body text-[var(--text-body)] text-[var(--color-text-secondary)] leading-relaxed">
         <p>
-          Ordr is more than just an e-commerce platform; it's a curated space where discerning buyers meet passionate, independent sellers. 
+          Ordr is more than just an e-commerce platform; it&apos;s a curated space where discerning buyers meet passionate, independent sellers. 
           Founded with the vision of bridging the gap between unique local artisans and a national audience, Ordr provides a premium 
           shopping experience that prioritizes quality, transparency, and design.
         </p>

@@ -28,7 +28,7 @@ export default async function MyOrdersPage() {
       {!orders || orders.length === 0 ? (
         <div className="text-center py-16 bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-[var(--radius-lg)]">
           <Package size={48} className="mx-auto mb-4 text-[var(--color-border-strong)]" />
-          <p className="text-[var(--color-text-secondary)]">You haven't placed any orders yet.</p>
+          <p className="text-[var(--color-text-secondary)]">You haven&apos;t placed any orders yet.</p>
           <Link href="/shop" className="mt-4 inline-block px-6 py-2 bg-[var(--color-accent)] text-white rounded-full">
             Start Shopping
           </Link>

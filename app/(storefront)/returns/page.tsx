@@ -55,7 +55,7 @@ export default function ReturnsPage() {
           <h2 className="font-accent text-xl uppercase tracking-wider mb-4 text-[var(--color-text-primary)]">How to Request a Return</h2>
           <p>
             You can request a return by visiting your <Link href="/account/orders" className="text-black underline font-medium">Orders page</Link>, 
-            selecting the specific order, and clicking "Initiate Return". Follow the prompts to select a reason and schedule a pickup.
+            selecting the specific order, and clicking &quot;Initiate Return&quot;. Follow the prompts to select a reason and schedule a pickup.
           </p>
         </section>
       </div>

@@ -5,7 +5,7 @@ export default function ContactPage() {
         Contact Us
       </h1>
       <p className="text-[var(--color-text-secondary)] font-body mb-12">
-        We're here to help. Reach out to us for any inquiries regarding your orders, vendor accounts, or general questions.
+        We&apos;re here to help. Reach out to us for any inquiries regarding your orders, vendor accounts, or general questions.
       </p>
 
       <form className="space-y-6">

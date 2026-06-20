@@ -186,7 +186,7 @@ function EmptyOrders() {
           marginBottom: 'var(--space-6)',
         }}
       >
-        When you place an order, it'll appear here.
+        When you place an order, it&apos;ll appear here.
       </p>
       <Link
         href="/shop"

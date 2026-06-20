@@ -18,7 +18,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
       </p>
 
       <section className="bg-[var(--color-bg-surface)] w-full rounded-[var(--radius-md)] p-6 md:p-8 text-left mb-12 border border-[var(--color-border)] shadow-sm">
-        <h2 className="font-display text-[var(--text-title)] mb-4 border-b border-[var(--color-border)] pb-2">What's Next?</h2>
+        <h2 className="font-display text-[var(--text-title)] mb-4 border-b border-[var(--color-border)] pb-2">What&apos;s Next?</h2>
         <ul className="space-y-4 text-[var(--color-text-secondary)] mt-4">
           <li className="flex gap-4 items-start">
             <span className="font-medium text-[var(--color-text-primary)] bg-[var(--color-bg)] w-8 h-8 flex items-center justify-center rounded-[var(--radius-full)] shrink-0 border border-[var(--color-border)]">1</span>

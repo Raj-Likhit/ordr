@@ -277,7 +277,7 @@ export default function VendorSettingsPage() {
               <div>
                 <p className="text-[var(--text-small)] font-medium text-[var(--color-success)]">Account Approved</p>
                 <p className="text-[var(--text-label)] text-[var(--color-text-secondary)] mt-0.5">
-                  Your vendor account is active. Products listed as "Active" appear on the storefront.
+                  Your vendor account is active. Products listed as &quot;Active&quot; appear on the storefront.
                 </p>
               </div>
             </div>
