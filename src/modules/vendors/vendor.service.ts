@@ -11,18 +11,18 @@ export class VendorService {
 
   async submitOnboarding(userId: string, payload: any) {
     const dbEncryptionKey = process.env.DATABASE_ENCRYPTION_KEY || 'default_secret_key_123';
-    let encryptedBankAccount = null;
+    let encryptedBankAccount: string | undefined = undefined;
 
     if (payload.bank_account_no) {
       encryptedBankAccount = await this.vendorRepository.encryptValue(payload.bank_account_no, dbEncryptionKey);
     }
 
-    const updatePayload = {
+    const updatePayload: Partial<VendorProfile> = {
       gstin: payload.gstin,
       bank_account_number: encryptedBankAccount,
       bank_ifsc: payload.bank_ifsc,
       bank_account_holder: payload.account_holder,
-      upi_id: payload.upi_id || null,
+      upi_id: payload.upi_id || undefined,
       status: 'under_review',
       submitted_at: new Date().toISOString()
     };
