@@ -93,11 +93,11 @@ export default function VendorQuestionsPage() {
                       />
                       <div className="flex gap-2">
                         <Button variant="primary" onClick={() => handleAnswerSubmit(q.id)}>Submit Answer</Button>
-                        <Button variant="outline" onClick={() => { setAnsweringId(null); setAnswerText(""); }}>Cancel</Button>
+                        <Button variant="secondary" onClick={() => { setAnsweringId(null); setAnswerText(""); }}>Cancel</Button>
                       </div>
                     </div>
                   ) : (
-                    <Button variant="outline" onClick={() => { setAnsweringId(q.id); setAnswerText(""); }}>Answer Question</Button>
+                    <Button variant="secondary" onClick={() => { setAnsweringId(q.id); setAnswerText(""); }}>Answer Question</Button>
                   )}
                 </div>
               ))}

@@ -240,9 +240,9 @@ export function ShopSort({ currentSort }: { currentSort: string }) {
 }
 
 export function MobileFilterDrawer({ 
-  categories, vendors, currentCategory, currentPrice, currentRating, currentVendor 
+  categories, vendors, facets, currentCategory, currentPrice, currentRating, currentVendor, currentMaterial, currentColor
 }: { 
-  categories: any[], vendors: any[], currentCategory: string, currentPrice: string, currentRating: string, currentVendor: string 
+  categories: any[], vendors: any[], facets?: { materials: string[], colors: string[] }, currentCategory: string, currentPrice: string, currentRating: string, currentVendor: string, currentMaterial?: string, currentColor?: string 
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -277,10 +277,13 @@ export function MobileFilterDrawer({
           <ShopSidebar 
             categories={categories} 
             vendors={vendors}
+            facets={facets}
             currentCategory={currentCategory} 
             currentPrice={currentPrice} 
             currentRating={currentRating}
             currentVendor={currentVendor}
+            currentMaterial={currentMaterial}
+            currentColor={currentColor}
           />
         </div>
         <div className="p-6 border-t border-[var(--color-border)]">

@@ -242,7 +242,7 @@ function BuyerAuthForm() {
           <div className="mb-6">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={handleGoogleSignIn}
               className="w-full justify-center flex items-center gap-3 py-2.5 h-auto text-[var(--color-text-primary)] hover:bg-[var(--color-bg)]"
             >

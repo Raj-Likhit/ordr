@@ -109,7 +109,7 @@ export function BulkFulfillModal({ isOpen, onClose, orders, onSuccess }: {
         </div>
 
         <div className="p-6 border-t border-[var(--color-border)] bg-[var(--color-bg)] rounded-b-[var(--radius-lg)] flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
           <Button 
             variant="primary" 
             onClick={handleSubmit}

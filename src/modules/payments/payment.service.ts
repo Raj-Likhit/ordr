@@ -3,7 +3,7 @@ import { IPaymentRepository } from './payment.repository.interface';
 export class PaymentService {
   constructor(private readonly paymentRepository: IPaymentRepository) {}
 
-  async processCheckout(buyerId: string, addressId: string, cartItems: any[]) {
+  async processCheckout(buyerId: string, addressId: string, cartItems: any[], paymentMethod?: string) {
     if (!addressId) throw new Error('Address is required');
     if (!cartItems || cartItems.length === 0) throw new Error('Cart is empty');
 

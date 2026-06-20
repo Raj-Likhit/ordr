@@ -113,7 +113,7 @@ export function CreatePromoModal({ vendorId, trigger }: { vendorId: string, trig
               </div>
 
               <div className="pt-4 flex gap-3">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setIsOpen(false)}>Cancel</Button>
+                <Button type="button" variant="secondary" className="flex-1" onClick={() => setIsOpen(false)}>Cancel</Button>
                 <Button type="submit" variant="primary" className="flex-1" disabled={loading}>
                   {loading ? <Loader2 className="animate-spin" size={16} /> : "Save"}
                 </Button>

@@ -23,7 +23,7 @@ export async function getProductBySlug(slug: string) {
   const { data, error } = await supabase
     .from('products')
     .select(`
-      id, title, slug, description, base_price, rating_avg, rating_count, category_id,
+      id, title, slug, description, base_price, rating_avg, rating_count, category_id, vendor_id,
       vendor:vendor_profiles ( id, business_name ),
       variants:product_variants ( id, size, color, stock, price_override ),
       images:product_images ( url )
