@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
 import { OrderService } from '@/src/modules/orders/order.service';
 import { OrderRepository } from '@/src/modules/orders/order.repository';
 
