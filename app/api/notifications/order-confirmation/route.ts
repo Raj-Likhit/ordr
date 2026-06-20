@@ -10,12 +10,12 @@ import OrderConfirmation from '@/emails/OrderConfirmation';
 // Called internally after the checkout verify-payment flow.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_ADDRESS = process.env.RESEND_FROM_EMAIL ?? 'orders@ordr.in';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ordr.in';
 
 export async function POST(request: Request) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy');
     const supabase = createClient();
 
     // ── Auth guard ────────────────────────────────────────────────────────
