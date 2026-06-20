@@ -38,4 +38,40 @@ export class ProductService {
   async getVendors() {
     return this.productRepository.getVendors();
   }
+
+  async getVendorProducts(vendorId: string, options: { search?: string; status?: string; page: number; pageSize: number }) {
+    // We can delegate to repository, but for now we define the interface
+    if ('findVendorProducts' in this.productRepository) {
+      return (this.productRepository as any).findVendorProducts(vendorId, options);
+    }
+    throw new Error('findVendorProducts not implemented in repository');
+  }
+
+  async createProduct(vendorId: string, input: any) {
+    if ('createProduct' in this.productRepository) {
+      return (this.productRepository as any).createProduct(vendorId, input);
+    }
+    throw new Error('createProduct not implemented in repository');
+  }
+
+  async getVendorProductById(vendorId: string, productId: string) {
+    if ('getVendorProductById' in this.productRepository) {
+      return (this.productRepository as any).getVendorProductById(vendorId, productId);
+    }
+    throw new Error('getVendorProductById not implemented in repository');
+  }
+
+  async updateProduct(vendorId: string, productId: string, input: any) {
+    if ('updateProduct' in this.productRepository) {
+      return (this.productRepository as any).updateProduct(vendorId, productId, input);
+    }
+    throw new Error('updateProduct not implemented in repository');
+  }
+
+  async deleteProduct(vendorId: string, productId: string) {
+    if ('deleteProduct' in this.productRepository) {
+      return (this.productRepository as any).deleteProduct(vendorId, productId);
+    }
+    throw new Error('deleteProduct not implemented in repository');
+  }
 }

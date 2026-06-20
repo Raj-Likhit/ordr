@@ -158,4 +158,59 @@ export class OrderRepository implements IOrderRepository {
 
     if (error) throw error;
   }
+
+  async findVendorOrders(vendorId: string, statusFilter?: string): Promise<any[]> {
+    const supabase = createClient();
+    let query = supabase
+      .from('sub_orders')
+      .select(
+        `
+        id,
+        status,
+        subtotal,
+        tracking_id,
+        created_at,
+        updated_at,
+        order:orders(
+          id,
+          total_amount,
+          payment_status,
+          created_at,
+          address:addresses(line1, city, state, pincode),
+          buyer:profiles(id, full_name, phone)
+        ),
+        order_items(
+          id,
+          quantity,
+          unit_price,
+          gst_rate,
+          gst_amount,
+          variant:product_variants(
+            id,
+            size,
+            color,
+            sku,
+            product:products(id, title, slug)
+          )
+        ),
+        order_status_history(
+          id,
+          status,
+          changed_at,
+          note
+        )
+      `
+      )
+      .eq('vendor_id', vendorId)
+      .order('created_at', { ascending: false });
+
+    if (statusFilter) {
+      query = query.eq('status', statusFilter);
+    }
+
+    const { data: subOrders, error } = await query;
+    if (error) throw error;
+
+    return subOrders || [];
+  }
 }

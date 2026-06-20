@@ -1,9 +1,9 @@
-import { WishlistRepository } from "./wishlist.repository";
 import { CreateWishlistGroupDTO, AddWishlistItemDTO, createWishlistGroupSchema, addWishlistItemSchema } from "./wishlist.dto";
 import { AppError } from "@/src/common/errors/AppError";
+import { IWishlistRepository } from "./wishlist.interface";
 
 export class WishlistService {
-  constructor(private readonly repository: WishlistRepository) {}
+  constructor(private readonly repository: IWishlistRepository) {}
 
   async createGroup(userId: string, data: CreateWishlistGroupDTO) {
     const validated = createWishlistGroupSchema.safeParse(data);

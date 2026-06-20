@@ -186,13 +186,170 @@ export class ProductRepository implements IProductRepository {
     });
   }
 
-  async getVendors() {
+  async getVendors(): Promise<any[]> {
     const supabase = createClient();
-    const { data, error } = await supabase.from('vendor_profiles').select('id, business_name');
+    const { data } = await supabase.from('vendor_profiles').select('id, business_name, store_slug, logo_url').eq('status', 'approved');
+    return data || [];
+  }
+
+  async findVendorProducts(vendorId: string, { search, status, page, pageSize }: any) {
+    const supabase = createClient();
+    let query = supabase
+      .from("products")
+      .select(`
+        id, title, slug, description, base_price, is_active,
+        rating_avg, rating_count, created_at,
+        categories ( id, name, slug ),
+        product_variants ( id, stock, sku, size, color, price_override )
+      `, { count: "exact" })
+      .eq("vendor_id", vendorId)
+      .order("created_at", { ascending: false })
+      .range((page - 1) * pageSize, page * pageSize - 1);
+
+    if (search) query = query.ilike("title", `%${search}%`);
+    if (status === "active") query = query.eq("is_active", true);
+    else if (status === "draft") query = query.eq("is_active", false);
+
+    const { data, count, error } = await query;
+    if (error) throw new Error(`Failed to fetch vendor products: ${error.message}`);
+
+    return { products: data || [], total: count || 0, page, pageSize };
+  }
+
+  async createProduct(vendorId: string, input: any) {
+    const supabase = createClient();
+    
+    // Generate slug from title
+    const slug = input.title.trim().toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      + "-" + Date.now();
+
+    const { data: product, error } = await supabase
+      .from("products")
+      .insert({
+        vendor_id: vendorId,
+        title: input.title.trim(),
+        slug,
+        description: input.description ?? null,
+        base_price: Number(input.base_price),
+        category_id: input.category_id ?? null,
+        is_active: Boolean(input.is_active),
+      })
+      .select()
+      .single();
+
     if (error) {
-      console.error('Error fetching vendors:', error);
-      return [];
+      if (error.code === "23505") throw new Error("A product with this title already exists");
+      throw new Error(`Failed to create product: ${error.message}`);
     }
-    return data;
+
+    if (input.variants && input.variants.length > 0) {
+      const variantInserts = input.variants.map((v: any) => ({
+        product_id: product.id,
+        size: v.size || null,
+        color: v.color || null,
+        stock: Number(v.stock ?? 0),
+        sku: v.sku || null,
+        price_override: v.price_override ? Number(v.price_override) : null
+      }));
+      await supabase.from("product_variants").insert(variantInserts);
+    } else if (input.stock !== undefined || input.sku) {
+      await supabase.from("product_variants").insert({
+        product_id: product.id,
+        stock: Number(input.stock ?? 0),
+        sku: input.sku ?? null,
+      });
+    }
+
+    if (input.images && input.images.length > 0) {
+      const imageInserts = input.images.map((url: string, index: number) => ({
+        product_id: product.id,
+        url: url,
+        sort_order: index
+      }));
+      await supabase.from("product_images").insert(imageInserts);
+    }
+
+    return product;
+  }
+  async getVendorProductById(vendorId: string, productId: string) {
+    const supabase = createClient();
+    const { data: product, error } = await supabase
+      .from("products")
+      .select(`
+        id, title, slug, description, base_price, is_active,
+        rating_avg, rating_count, created_at, category_id,
+        categories ( id, name, slug ),
+        product_variants ( id, stock, sku, size, color, price_override ),
+        product_images   ( id, url, sort_order )
+      `)
+      .eq("id", productId)
+      .eq("vendor_id", vendorId)
+      .single();
+
+    if (error || !product) throw new Error("Product not found");
+    return product;
+  }
+
+  async updateProduct(vendorId: string, productId: string, body: any) {
+    const supabase = createClient();
+    const product = await this.getVendorProductById(vendorId, productId);
+    if (!product) throw new Error("Product not found");
+
+    const patch: Record<string, unknown> = {};
+    if (body.title !== undefined) {
+      patch.title = body.title.trim();
+      patch.slug  = body.title.trim().toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        + "-" + Date.now();
+    }
+    if (body.description !== undefined) patch.description = body.description;
+    if (body.base_price  !== undefined) patch.base_price = Number(body.base_price);
+    if (body.category_id !== undefined) patch.category_id = body.category_id;
+    if (body.is_active   !== undefined) patch.is_active   = Boolean(body.is_active);
+
+    if (Object.keys(patch).length > 0) {
+      const { error } = await supabase.from("products").update(patch).eq("id", productId);
+      if (error) throw new Error("Failed to update product");
+    }
+
+    if (body.stock !== undefined || body.sku !== undefined) {
+      const variantPatch: Record<string, unknown> = {};
+      if (body.stock !== undefined) variantPatch.stock = Number(body.stock);
+      if (body.sku   !== undefined) variantPatch.sku   = body.sku;
+
+      const { data: variants } = await supabase.from("product_variants").select("id").eq("product_id", productId).limit(1);
+
+      if (variants && variants.length > 0) {
+        await supabase.from("product_variants").update(variantPatch).eq("id", variants[0].id);
+      } else {
+        await supabase.from("product_variants").insert({
+          product_id: productId,
+          stock: Number(body.stock ?? 0),
+          sku:   body.sku ?? null,
+        });
+      }
+    }
+
+    const { data: updated } = await supabase
+      .from("products")
+      .select("*, categories(*), product_variants(*), product_images(*)")
+      .eq("id", productId)
+      .single();
+
+    return updated;
+  }
+
+  async deleteProduct(vendorId: string, productId: string) {
+    const supabase = createClient();
+    const product = await this.getVendorProductById(vendorId, productId);
+    if (!product) throw new Error("Product not found");
+
+    const { error } = await supabase.from("products").delete().eq("id", productId);
+    if (error) throw new Error("Failed to delete product");
   }
 }

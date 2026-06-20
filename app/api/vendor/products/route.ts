@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { productSchema } from "@/lib/validations/product";
+import { productSchema } from "@/src/modules/products/product.dto";
+import { ProductService } from "@/src/modules/products/product.service";
+import { ProductRepository } from "@/src/modules/products/product.repository";
 
 /* ─── GET /api/vendor/products ─────────────────────────────────────────── */
 export async function GET(request: NextRequest) {
@@ -40,40 +42,15 @@ export async function GET(request: NextRequest) {
     const page      = Math.max(1, Number(searchParams.get("page") ?? "1"));
     const pageSize  = Math.min(50, Math.max(1, Number(searchParams.get("pageSize") ?? "20")));
 
-    let query = supabase
-      .from("products")
-      .select(`
-        id, title, slug, description, base_price, is_active,
-        rating_avg, rating_count, created_at,
-        categories ( id, name, slug ),
-        product_variants ( id, stock, sku, size, color, price_override )
-      `, { count: "exact" })
-      .eq("vendor_id", vendorProfile.id)
-      .order("created_at", { ascending: false })
-      .range((page - 1) * pageSize, page * pageSize - 1);
-
-    if (search) {
-      query = query.ilike("title", `%${search}%`);
-    }
-    if (statusFilter === "active") {
-      query = query.eq("is_active", true);
-    } else if (statusFilter === "draft") {
-      query = query.eq("is_active", false);
-    }
-
-    const { data: products, error, count } = await query;
-
-    if (error) {
-      console.error("[GET /api/vendor/products]", error);
-      return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      products: products ?? [],
-      total: count ?? 0,
+    const productService = new ProductService(new ProductRepository());
+    const result = await productService.getVendorProducts(vendorProfile.id, {
+      search,
+      status: statusFilter,
       page,
-      pageSize,
+      pageSize
     });
+
+    return NextResponse.json(result);
   } catch (err) {
     console.error("[GET /api/vendor/products] unexpected:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -114,67 +91,18 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { title, description, base_price, category_id, is_active, stock, sku } = parseResult.data;
-
-    // Generate slug from title
-    const slug = title.trim().toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      + "-" + Date.now();
-
-    const { data: product, error } = await supabase
-      .from("products")
-      .insert({
-        vendor_id:   vendorProfile.id,
-        title:       title.trim(),
-        slug,
-        description: description ?? null,
-        base_price:  Number(base_price),
-        category_id: category_id ?? null,
-        is_active:   Boolean(is_active),
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("[POST /api/vendor/products]", error);
-      if (error.code === "23505") {
-        return NextResponse.json({ error: "A product with this title already exists" }, { status: 409 });
+    const productService = new ProductService(new ProductRepository());
+    
+    try {
+      const product = await productService.createProduct(vendorProfile.id, parseResult.data);
+      return NextResponse.json({ product }, { status: 201 });
+    } catch (e: any) {
+      if (e.message === "A product with this title already exists") {
+        return NextResponse.json({ error: e.message }, { status: 409 });
       }
-      return NextResponse.json({ error: "Failed to create product" }, { status: 500 });
+      throw e;
     }
 
-    // If variants array is provided, insert them. Otherwise fallback to stock/sku default variant
-    if (body.variants && body.variants.length > 0) {
-      const variantInserts = body.variants.map((v: any) => ({
-        product_id: product.id,
-        size: v.size || null,
-        color: v.color || null,
-        stock: Number(v.stock ?? 0),
-        sku: v.sku || null,
-        price_override: v.price_override ? Number(v.price_override) : null
-      }));
-      await supabase.from("product_variants").insert(variantInserts);
-    } else if (body.stock !== undefined || body.sku) {
-      await supabase.from("product_variants").insert({
-        product_id: product.id,
-        stock:      Number(body.stock ?? 0),
-        sku:        body.sku ?? null,
-      });
-    }
-
-    // Insert images if provided
-    if (body.images && body.images.length > 0) {
-      const imageInserts = body.images.map((url: string, index: number) => ({
-        product_id: product.id,
-        url: url,
-        sort_order: index
-      }));
-      await supabase.from("product_images").insert(imageInserts);
-    }
-
-    return NextResponse.json({ product }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/vendor/products] unexpected:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -9,7 +9,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { AuthProvider } from "@/hooks/useAuth";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingProvider } from "@/components/onboarding/OnboardingProvider";
-import { OnboardingStatus } from "@/lib/onboarding/types";
+import { OnboardingStatus } from "@/src/modules/onboarding/types";
 
 export const metadata: Metadata = {
   title: "Ordr",

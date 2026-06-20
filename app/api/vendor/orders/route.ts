@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { OrderService } from '@/src/modules/orders/order.service';
+import { OrderRepository } from '@/src/modules/orders/order.repository';
+
+export const dynamic = 'force-dynamic';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/vendor/orders
@@ -33,78 +37,15 @@ export async function GET(request: Request) {
 
     // Parse optional query params
     const { searchParams } = new URL(request.url);
-    const statusFilter = searchParams.get('status'); // e.g. ?status=placed
+    const statusFilter = searchParams.get('status') || undefined;
 
-    let query = supabase
-      .from('sub_orders')
-      .select(
-        `
-        id,
-        status,
-        subtotal,
-        tracking_id,
-        created_at,
-        updated_at,
-        order:orders(
-          id,
-          total_amount,
-          payment_status,
-          created_at,
-          address:addresses(line1, city, state, pincode),
-          buyer:profiles(id, full_name, phone)
-        ),
-        order_items(
-          id,
-          quantity,
-          unit_price,
-          gst_rate,
-          gst_amount,
-          variant:product_variants(
-            id,
-            size,
-            color,
-            sku,
-            product:products(id, title, slug)
-          )
-        ),
-        order_status_history(
-          id,
-          status,
-          changed_at,
-          note
-        )
-      `
-      )
-      .eq('vendor_id', user.id)
-      .order('created_at', { ascending: false });
+    const orderService = new OrderService(new OrderRepository());
+    const enriched = await orderService.getVendorOrders(user.id, statusFilter);
 
-    if (statusFilter) {
-      query = query.eq('status', statusFilter);
-    }
-
-    const { data: subOrders, error } = await query;
-
-    if (error) {
-      console.error('[GET /api/vendor/orders]', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // Enrich with sorted history
-    const enriched = (subOrders ?? []).map((so: any) => ({
-      ...so,
-      order_status_history: [...(so.order_status_history ?? [])].sort(
-        (a: any, b: any) =>
-          new Date(a.changed_at).getTime() - new Date(b.changed_at).getTime()
-      ),
-    }));
-
-    return NextResponse.json({ subOrders: enriched });
+    return NextResponse.json({ orders: enriched });
   } catch (err: any) {
     console.error('[GET /api/vendor/orders] unexpected:', err);
-    return NextResponse.json(
-      { error: err.message ?? 'Internal Server Error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

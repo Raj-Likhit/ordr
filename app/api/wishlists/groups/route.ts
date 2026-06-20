@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { WishlistRepository } from "@/src/modules/wishlists/wishlist.repository";
 import { WishlistService } from "@/src/modules/wishlists/wishlist.service";
 import { AppError } from "@/src/common/errors/AppError";
+import { createWishlistGroupSchema } from "@/src/modules/wishlists/wishlist.dto";
 
 export async function GET(req: NextRequest) {
   try {
@@ -35,8 +36,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    const result = createWishlistGroupSchema.safeParse(body);
+    
+    if (!result.success) {
+      return NextResponse.json({ error: "Validation failed", details: result.error.format() }, { status: 400 });
+    }
+
     const service = new WishlistService(new WishlistRepository(supabase));
-    const group = await service.createGroup(user.id, body);
+    const group = await service.createGroup(user.id, result.data);
     
     return NextResponse.json(group, { status: 201 });
   } catch (error) {

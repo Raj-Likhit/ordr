@@ -1,7 +1,8 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { AppError } from "@/src/common/errors/AppError";
+import { IWishlistRepository } from "./wishlist.interface";
 
-export class WishlistRepository {
+export class WishlistRepository implements IWishlistRepository {
   constructor(private readonly supabase: SupabaseClient) {}
 
   async createGroup(userId: string, name: string) {

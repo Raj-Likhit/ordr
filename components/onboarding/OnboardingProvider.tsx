@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { OnboardingStatus } from '../../lib/onboarding/types';
+import { OnboardingStatus } from '@/src/modules/onboarding/types';
 import { useOnboarding } from './useOnboarding';
 import { NameCaptureModal } from './NameCaptureModal';
 

@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { OrderService } from '@/src/modules/orders/order.service';
 import { OrderRepository } from '@/src/modules/orders/order.repository';
 
+export const dynamic = 'force-dynamic';
+
 interface RouteContext {
   params: { id: string };
 }

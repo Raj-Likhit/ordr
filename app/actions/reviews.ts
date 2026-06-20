@@ -2,6 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { SubmitReviewDto } from '@/src/modules/reviews/reviews.dto';
+import { ReviewsRepository } from '@/src/modules/reviews/reviews.repository';
+import { ReviewsService } from '@/src/modules/reviews/reviews.service';
 
 export async function submitReview(formData: FormData) {
   const supabase = createClient();
@@ -11,42 +14,30 @@ export async function submitReview(formData: FormData) {
     return { error: 'You must be logged in to submit a review.' };
   }
 
-  const productId = formData.get('product_id') as string;
-  const rating = parseInt(formData.get('rating') as string, 10);
-  const comment = formData.get('comment') as string;
+  // 1. Validation Layer (DTO)
+  const parseResult = SubmitReviewDto.safeParse({
+    productId: formData.get('product_id'),
+    rating: parseInt(formData.get('rating') as string, 10),
+    comment: formData.get('comment'),
+  });
+
+  if (!parseResult.success) {
+    console.error('Validation error:', parseResult.error.format());
+    return { error: 'Invalid review data. Please ensure all fields are correct.' };
+  }
+
+  // 2. Application Service Layer
+  const repository = new ReviewsRepository(supabase);
+  const service = new ReviewsService(repository);
+  
+  const result = await service.submitReview(user.id, parseResult.data);
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  // 3. Presentation Layer (HTTP / Revalidation)
   const slug = formData.get('slug') as string;
-
-  if (!productId || isNaN(rating) || rating < 1 || rating > 5) {
-    return { error: 'Invalid review data.' };
-  }
-
-  // Check if user has already reviewed this product
-  const { data: existingReview } = await supabase
-    .from('reviews')
-    .select('id')
-    .eq('product_id', productId)
-    .eq('buyer_id', user.id)
-    .maybeSingle();
-
-  if (existingReview) {
-    return { error: 'You have already reviewed this product.' };
-  }
-
-  const { error } = await supabase
-    .from('reviews')
-    .insert({
-      product_id: productId,
-      buyer_id: user.id,
-      rating,
-      comment: comment || null,
-    });
-
-  if (error) {
-    console.error('Error submitting review:', error);
-    return { error: 'Failed to submit review. Please try again.' };
-  }
-
-  // Revalidate the product page to show the new review
   if (slug) {
     revalidatePath(`/product/${slug}`);
   }

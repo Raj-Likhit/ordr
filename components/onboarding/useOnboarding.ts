@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ONBOARDING_STEPS } from '../../lib/onboarding/steps.config';
+import { ONBOARDING_STEPS } from '@/src/modules/onboarding/steps.config';
 import { updateOnboardingStatus } from '../../app/actions/onboarding';
 import { useRouter, usePathname } from 'next/navigation';
 

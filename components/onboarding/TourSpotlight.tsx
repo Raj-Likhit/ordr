@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { StepConfig } from '../../lib/onboarding/types';
+import { StepConfig } from '@/src/modules/onboarding/types';
 
 interface TourSpotlightProps {
   step: StepConfig;

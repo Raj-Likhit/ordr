@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { OnboardingStatus } from '@/lib/onboarding/types';
+import { OnboardingStatus } from '@/src/modules/onboarding/types';
 
 export async function updateOnboardingStatus(status: OnboardingStatus) {
   const supabase = createClient();

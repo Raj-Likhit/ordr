@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { VendorService } from '@/src/modules/vendors/vendor.service';
+import { VendorRepository } from '@/src/modules/vendors/vendor.repository';
 
 export async function PATCH(
   request: Request,
@@ -26,20 +28,11 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from('vendor_profiles')
-    .update({ 
-      status,
-      approved_by: user.id,
-      approved_at: new Date().toISOString()
-    })
-    .eq('id', params.id)
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const vendorService = new VendorService(new VendorRepository());
+    const data = await vendorService.updateVendorStatus(params.id, status);
+    return NextResponse.json(data);
+  } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  
-  return NextResponse.json(data);
 }

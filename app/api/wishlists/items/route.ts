@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { WishlistRepository } from "@/src/modules/wishlists/wishlist.repository";
 import { WishlistService } from "@/src/modules/wishlists/wishlist.service";
 import { AppError } from "@/src/common/errors/AppError";
+import { addWishlistItemSchema } from "@/src/modules/wishlists/wishlist.dto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,8 +15,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    const result = addWishlistItemSchema.safeParse(body);
+    
+    if (!result.success) {
+      return NextResponse.json({ error: "Validation failed", details: result.error.format() }, { status: 400 });
+    }
+
     const service = new WishlistService(new WishlistRepository(supabase));
-    const item = await service.addItem(user.id, body);
+    const item = await service.addItem(user.id, result.data);
     
     return NextResponse.json(item, { status: 201 });
   } catch (error) {

@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 import AbandonedCartEmail from '@/emails/AbandonedCart';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
   try {
     // Verify auth mechanism (e.g. Vercel Cron Secret)

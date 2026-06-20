@@ -104,4 +104,90 @@ export class OrderService {
       fetch(`${baseUrl}/api/invoice/${subOrderId}/generate`, { method: 'POST' }).catch(console.error);
     }
   }
+
+  async getVendorOrders(vendorId: string, statusFilter?: string) {
+    if ('findVendorOrders' in this.orderRepository) {
+      const subOrders = await (this.orderRepository as any).findVendorOrders(vendorId, statusFilter);
+      return subOrders.map((so: any) => ({
+        ...so,
+        order_status_history: [...(so.order_status_history ?? [])].sort(
+          (a: any, b: any) =>
+            new Date(a.changed_at).getTime() - new Date(b.changed_at).getTime()
+        ),
+      }));
+    }
+    throw new Error('findVendorOrders not implemented');
+  }
+
+  async updateVendorOrderStatus(vendorId: string, subOrderId: string, newStatus: OrderStatus) {
+    const subOrder = await this.orderRepository.findSubOrderById(subOrderId);
+    if (!subOrder || subOrder.vendor_id !== vendorId) {
+      throw new Error('Sub-order not found or unauthorized');
+    }
+
+    if (!ALLOWED[subOrder.status as OrderStatus]?.includes(newStatus)) {
+      throw new Error(`Invalid transition: ${subOrder.status} -> ${newStatus}`);
+    }
+
+    await this.orderRepository.updateSubOrderStatus(subOrderId, newStatus);
+    await this.orderRepository.logStatusHistory(
+      subOrderId,
+      newStatus,
+      `Status changed to ${newStatus}`
+    );
+
+    // Notifications
+    const buyerId = subOrder.orders?.buyer_id;
+    const buyerProfile = subOrder.orders?.profiles;
+    if (buyerProfile && buyerId) {
+      const { createClient } = require('@/lib/supabase/server');
+      const supabase = createClient();
+      const { data: vendorProfile } = await supabase.from('profiles').select('business_name').eq('id', vendorId).single();
+      
+      const { notifyOrderStatusChanged } = require('@/lib/notify');
+      await notifyOrderStatusChanged({
+        buyerEmail: buyerProfile.email || '',
+        buyerPhone: buyerProfile.phone,
+        orderId: subOrder.order_id,
+        subOrderId: subOrderId,
+        vendorName: vendorProfile?.business_name || 'Ordr Vendor',
+        newStatus: newStatus,
+      }).catch(console.error);
+    }
+
+    // Escrow Release
+    if (newStatus.toUpperCase() === 'DELIVERED') {
+      const { createClient } = require('@/lib/supabase/server');
+      const supabase = createClient();
+      const { data: orderData } = await supabase.from('orders').select('razorpay_payment_id').eq('id', subOrder.order_id).single();
+      const paymentId = orderData?.razorpay_payment_id;
+
+      if (paymentId) {
+        const Razorpay = require('razorpay');
+        const razorpay = new Razorpay({
+          key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_fallback',
+          key_secret: process.env.RAZORPAY_KEY_SECRET || 'secret_fallback',
+        });
+
+        try {
+          const transfers = await razorpay.payments.fetchTransfers(paymentId);
+          if (transfers && transfers.items) {
+            const vendorTransfer = transfers.items.find(
+              (t: any) => t.notes && t.notes.vendor_id === vendorId
+            );
+
+            if (vendorTransfer && vendorTransfer.on_hold) {
+              await razorpay.transfers.edit(vendorTransfer.id, { on_hold: 0 });
+              await supabase
+                .from('sub_orders')
+                .update({ payout_status: 'settled', payout_transfer_id: vendorTransfer.id })
+                .eq('id', subOrderId);
+            }
+          }
+        } catch (rzpError: any) {
+          console.error("Razorpay Escrow Release Error:", rzpError);
+        }
+      }
+    }
+  }
 }
