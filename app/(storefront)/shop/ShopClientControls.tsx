@@ -62,7 +62,7 @@ export function ShopSidebar({
 
   return (
     <>
-      <div>
+      <div data-tour-id="shop-filters">
         <h2 className="font-display text-[var(--text-title)] mb-4 border-b border-[var(--color-border)] pb-2">Filters</h2>
         <div className="flex flex-col gap-6 mt-6">
           
@@ -227,6 +227,7 @@ export function ShopSort({ currentSort }: { currentSort: string }) {
 
   return (
     <select 
+      data-tour-id="shop-sort"
       value={currentSort}
       onChange={handleSortChange}
       className="border border-[var(--color-border)] rounded-[var(--radius-sm)] px-4 py-2 bg-[var(--color-bg)] text-[var(--color-text-primary)] text-[var(--text-small)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] cursor-pointer"

@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Validation failed', details: result.error.format() }, { status: 400 });
     }
 
-    const { address_id: addressId, payment_method } = result.data;
+    const { address_id: addressId, payment_method, coupon_code } = result.data;
 
     const cartService = new CartService(new CartRepository());
     const cart = await cartService.getCart(user.id);
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     const paymentService = new PaymentService(new PaymentRepository());
-    const response = await paymentService.processCheckout(user.id, addressId, cart.items, payment_method);
+    const response = await paymentService.processCheckout(user.id, addressId, cart.items, payment_method, coupon_code);
     
     return NextResponse.json(response);
   } catch (err: any) {

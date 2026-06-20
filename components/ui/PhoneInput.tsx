@@ -20,9 +20,10 @@ interface PhoneInputProps {
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
+  disabled?: boolean;
 }
 
-export function PhoneInput({ value, onChange, required }: PhoneInputProps) {
+export function PhoneInput({ value, onChange, required, disabled }: PhoneInputProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -80,8 +81,9 @@ export function PhoneInput({ value, onChange, required }: PhoneInputProps) {
     <div className="relative flex w-full" ref={dropdownRef}>
       <button
         type="button"
+        disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 border border-r-0 border-[var(--color-border)] rounded-l bg-[var(--color-bg-dark)]/5 hover:bg-[var(--color-bg-dark)]/10 transition-colors focus:outline-none"
+        className="flex items-center gap-2 px-3 py-2 border border-r-0 border-[var(--color-border)] rounded-l bg-[var(--color-bg-dark)]/5 hover:bg-[var(--color-bg-dark)]/10 transition-colors focus:outline-none disabled:opacity-50"
       >
         <span className="text-base">{selectedCountry.flag}</span>
         <span className="text-[var(--text-small)] font-medium text-[var(--color-text-secondary)] w-10 text-left">
@@ -111,8 +113,9 @@ export function PhoneInput({ value, onChange, required }: PhoneInputProps) {
 
       <input
         required={required}
+        disabled={disabled}
         type="tel"
-        className="flex-1 border border-[var(--color-border)] rounded-r px-3 py-2 text-[var(--text-small)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] w-full min-w-0"
+        className="flex-1 border border-[var(--color-border)] rounded-r px-3 py-2 text-[var(--text-small)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)] w-full min-w-0 disabled:opacity-50"
         placeholder={`e.g. ${'1'.repeat(selectedCountry.maxLength)}`}
         value={localNumber}
         onChange={handleNumberChange}

@@ -77,7 +77,7 @@ export default async function ShopPage({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {products && products.length > 0 ? (
             products.map((product: any, index: number) => (
-              <Link key={product.id} href={`/product/${product.slug}`} prefetch={true} className="flex flex-col gap-4 group cursor-pointer block">
+              <Link data-tour-id={index === 0 ? "shop-add-to-cart" : undefined} key={product.id} href={`/product/${product.slug}`} prefetch={true} className="flex flex-col gap-4 group cursor-pointer block">
                 <div className="relative aspect-[3/4] overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-border)]">
                   <Image 
                     src={product.images?.[0]?.url || "/assets/product-card-placeholder.png"} 

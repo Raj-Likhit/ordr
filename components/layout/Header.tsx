@@ -78,6 +78,7 @@ export function Header() {
             {/* Icons */}
             <div className="flex items-center space-x-4 md:space-x-6">
               <button 
+                data-tour-id="homepage-search"
                 onClick={() => setIsSearchOpen(true)} 
                 className="p-2 hover:text-[var(--color-accent)] transition-colors hidden md:block"
                 aria-label="Search"

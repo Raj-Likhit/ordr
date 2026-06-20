@@ -21,8 +21,7 @@ export class UserRepository {
   async updateProfile(userId: string, updates: UpdateProfileDTO) {
     const { data, error } = await this.supabase
       .from("profiles")
-      .update(updates)
-      .eq("id", userId)
+      .upsert({ id: userId, ...updates })
       .select()
       .single();
 
@@ -62,6 +61,9 @@ export class UserRepository {
       .single();
 
     if (error) {
+      if (error.code === '23503' && error.message.includes('user_id_fkey')) {
+        throw new AppError('Please complete your profile first', 400);
+      }
       throw new AppError(`Failed to create address: ${error.message}`, 500);
     }
     return address;
@@ -122,6 +124,9 @@ export class UserRepository {
       .single();
 
     if (error) {
+      if (error.code === '23503' && error.message.includes('user_id_fkey')) {
+        throw new AppError('Please complete your profile first', 400);
+      }
       throw new AppError(`Failed to save payment method: ${error.message}`, 500);
     }
     return pm;

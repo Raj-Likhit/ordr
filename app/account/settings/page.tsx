@@ -121,7 +121,8 @@ export default function AccountSettingsPage() {
         setProfileModalOpen(false);
         fetchData();
       } else {
-        alert("Failed to update profile");
+        const errData = await res.json().catch(() => null);
+        alert(errData?.error || "Failed to update profile");
       }
     } catch (err) {
       console.error(err);
@@ -145,7 +146,8 @@ export default function AccountSettingsPage() {
         setAddressForm({ full_name: "", phone: "", address_line1: "", address_line2: "", city: "", state: "", postal_code: "", country: "", is_default_shipping: false });
         fetchData();
       } else {
-        alert("Failed to add address");
+        const errData = await res.json().catch(() => null);
+        alert(errData?.error || "Failed to add address");
       }
     } catch (err) {
       console.error(err);
@@ -187,7 +189,8 @@ export default function AccountSettingsPage() {
         setPaymentForm({ card_holder_name: "", card_brand: "Visa", card_number: "", expiry_month: 12, expiry_year: 2026 });
         fetchData();
       } else {
-        alert("Failed to add payment method");
+        const errData = await res.json().catch(() => null);
+        alert(errData?.error || "Failed to add payment method");
       }
     } catch (err) {
       console.error(err);
@@ -244,7 +247,7 @@ export default function AccountSettingsPage() {
         </div>
 
         {/* Addresses Card */}
-        <div className="border border-[var(--color-border)] rounded-lg p-6 hover:shadow-md transition-shadow">
+        <div data-tour-id="profile-addresses" className="border border-[var(--color-border)] rounded-lg p-6 hover:shadow-md transition-shadow">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-[var(--color-bg-dark)]/5 rounded-full">
               <MapPin size={32} className="text-[var(--color-text-primary)]" />

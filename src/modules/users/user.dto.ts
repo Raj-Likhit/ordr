@@ -4,7 +4,7 @@ const phoneRegex = /^\+\d{1,4}\s\d{6,14}$/;
 
 export const updateProfileSchema = z.object({
   full_name: z.string().optional(),
-  phone: z.string().regex(phoneRegex, "Invalid phone number format").optional(),
+  phone: z.string().refine((val) => val === "" || phoneRegex.test(val), "Invalid phone number format").optional(),
   date_of_birth: z.string().optional(),
   gender: z.string().optional(),
 });

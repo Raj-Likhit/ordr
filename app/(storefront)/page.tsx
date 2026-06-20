@@ -34,7 +34,7 @@ export default async function StorefrontHome() {
       </section>
 
       {/* Categories */}
-      <section className="py-20 px-4 md:px-8 max-w-7xl mx-auto w-full">
+      <section data-tour-id="homepage-nav" className="py-20 px-4 md:px-8 max-w-7xl mx-auto w-full">
         <AnimatedReveal direction="up" className="flex justify-between items-end mb-12">
           <h2 className="font-display text-[var(--text-display)] text-[var(--color-text-primary)]">Shop by Category</h2>
           <Link href="/shop" className="text-[var(--color-accent)] hover:underline font-medium">View All</Link>
@@ -60,7 +60,7 @@ export default async function StorefrontHome() {
       </section>
 
       {/* Trending / Featured */}
-      <section className="py-20 px-4 md:px-8 max-w-7xl mx-auto w-full bg-[var(--color-bg-surface)] rounded-[var(--radius-lg)] mb-20 shadow-sm border border-[var(--color-border)]">
+      <section data-tour-id="homepage-featured" className="py-20 px-4 md:px-8 max-w-7xl mx-auto w-full bg-[var(--color-bg-surface)] rounded-[var(--radius-lg)] mb-20 shadow-sm border border-[var(--color-border)]">
         <AnimatedReveal direction="up" className="flex justify-between items-end mb-12">
           <h2 className="font-display text-[var(--text-display)] text-[var(--color-text-primary)]">Trending Now</h2>
           <Link href="/shop" className="text-[var(--color-accent)] hover:underline font-medium">Shop All</Link>

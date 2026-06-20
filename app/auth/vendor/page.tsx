@@ -9,11 +9,16 @@ import { Input } from "@/components/ui/Input";
 import { useToast } from "@/hooks/useToast";
 import Link from "next/link";
 import { ArrowLeft, Store } from "lucide-react";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 
 function VendorAuthForm() {
   const [isLogin, setIsLogin] = useState(true);
+  const [authMode, setAuthMode] = useState<"email" | "phone">("email");
   const [email, setEmail] = useState("vendor1@ordr.com");
   const [password, setPassword] = useState("vendor123456");
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [gstin, setGstin] = useState("");
@@ -37,6 +42,68 @@ function VendorAuthForm() {
       if (error) throw error;
     } catch (err: any) {
       showToast({ message: err.message || "Google authentication failed", type: "error" });
+    }
+  };
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+        options: {
+          data: !isLogin && fullName ? { full_name: fullName } : undefined,
+        }
+      });
+      if (error) throw error;
+      setOtpSent(true);
+      showToast({ message: "OTP sent to your phone!", type: "success" });
+    } catch (err: any) {
+      showToast({ message: err.message || "Failed to send OTP", type: "error" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: otp,
+        type: 'sms'
+      });
+      if (error) throw error;
+
+      showToast({ message: "Successfully verified!", type: "success" });
+      await refreshProfile();
+      
+      if (data.user) {
+        if (!isLogin) {
+          const { error: profileErr } = await supabase
+            .from("profiles")
+            .insert({
+              id: data.user.id,
+              role: "vendor",
+              full_name: fullName || "Ordr Vendor",
+              business_name: businessName || "My Studio"
+            });
+          if (profileErr && profileErr.code !== "23505") {
+            console.error("Profile creation error:", profileErr);
+          }
+        }
+      }
+      
+      const redirectPath = searchParams.get("redirect") || "/vendor";
+      router.push(redirectPath);
+      router.refresh();
+    } catch (err: any) {
+      showToast({ message: err.message || "Invalid OTP", type: "error" });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -153,70 +220,165 @@ function VendorAuthForm() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-[var(--color-bg-surface)] px-2 text-[var(--color-text-muted)]">
-                Or continue with email
+                Or continue with
               </span>
             </div>
           </div>
 
-          <form onSubmit={handleAuth} className="space-y-5">
-            {!isLogin && (
-              <>
+          {/* Auth Method Tabs */}
+          <div className="flex bg-[var(--color-border)]/50 p-1 rounded-[var(--radius-md)] mb-6">
+            <button
+              onClick={() => setAuthMode('email')}
+              className={`flex-1 py-2 text-sm font-medium rounded-[var(--radius-sm)] transition-colors ${
+                authMode === 'email'
+                  ? 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]'
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              Email
+            </button>
+            <button
+              onClick={() => setAuthMode('phone')}
+              className={`flex-1 py-2 text-sm font-medium rounded-[var(--radius-sm)] transition-colors ${
+                authMode === 'phone'
+                  ? 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)] shadow-[var(--shadow-sm)]'
+                  : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+              }`}
+            >
+              Phone
+            </button>
+          </div>
+
+          {authMode === 'phone' ? (
+            <form onSubmit={otpSent ? handleVerifyOtp : handleSendOtp} className="space-y-5">
+              {!isLogin && !otpSent && (
+                <>
+                  <div>
+                    <Input
+                      type="text"
+                      required
+                      label="Full Name"
+                      placeholder="Jane Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      required
+                      label="Business Name"
+                      placeholder="Jane's Ceramics"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+
+              <div>
+                <PhoneInput
+                  value={phone}
+                  onChange={setPhone}
+                  disabled={otpSent || submitting}
+                  required
+                />
+              </div>
+
+              {otpSent && (
                 <div>
                   <Input
                     type="text"
                     required
-                    label="Full Name"
-                    placeholder="Jane Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    label="Verification Code"
+                    placeholder="Enter 6-digit OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
                   />
+                  <div className="flex justify-end mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setOtpSent(false)}
+                      className="text-xs text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                    >
+                      Change phone number
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <Input
-                    type="text"
-                    required
-                    label="Business Name"
-                    placeholder="Jane's Ceramics"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                  />
-                </div>
-              </>
-            )}
+              )}
 
-            <div>
-              <Input
-                type="email"
-                required
-                label="Email"
-                placeholder="studio@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={submitting || (!otpSent && phone.length < 8)}
+                  className="w-full justify-center"
+                >
+                  {submitting ? "Processing..." : otpSent ? "Verify OTP" : "Send OTP"}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleAuth} className="space-y-5">
+              {!isLogin && (
+                <>
+                  <div>
+                    <Input
+                      type="text"
+                      required
+                      label="Full Name"
+                      placeholder="Jane Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      required
+                      label="Business Name"
+                      placeholder="Jane's Ceramics"
+                      value={businessName}
+                      onChange={(e) => setBusinessName(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
 
-            <div>
-              <Input
-                type="password"
-                required
-                label="Password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+              <div>
+                <Input
+                  type="email"
+                  required
+                  label="Email"
+                  placeholder="studio@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
 
-            <div className="pt-2">
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={submitting}
-                className="w-full justify-center"
-              >
-                {submitting ? "Processing..." : isLogin ? "Sign In" : "Apply to Sell"}
-              </Button>
-            </div>
-          </form>
+              <div>
+                <Input
+                  type="password"
+                  required
+                  label="Password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={submitting}
+                  className="w-full justify-center"
+                >
+                  {submitting ? "Processing..." : isLogin ? "Sign In" : "Apply to Sell"}
+                </Button>
+              </div>
+            </form>
+          )}
 
           {/* Toggle */}
           <div className="mt-6 pt-6 border-t border-[var(--color-border)] text-center">

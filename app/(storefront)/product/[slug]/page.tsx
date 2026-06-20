@@ -12,13 +12,14 @@ import { ProductQA } from '@/components/storefront/ProductQA';
 export const revalidate = 3600; // ISR cache
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
-  if (!product) {
+  const data = await getProductBySlug(params.slug);
+  if (!data) {
     return { title: 'Product Not Found' };
   }
+  const product: any = data;
   return {
-    title: `${product.title} | Ordr`,
-    description: product.description,
+    title: product.seo_title || `${product.title} | Ordr`,
+    description: product.seo_description || product.description,
   };
 }
 

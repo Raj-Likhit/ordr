@@ -3,7 +3,7 @@ import { IPaymentRepository } from './payment.repository.interface';
 export class PaymentService {
   constructor(private readonly paymentRepository: IPaymentRepository) {}
 
-  async processCheckout(buyerId: string, addressId: string, cartItems: any[], paymentMethod?: string) {
+  async processCheckout(buyerId: string, addressId: string, cartItems: any[], paymentMethod?: string, couponCode?: string) {
     if (!addressId) throw new Error('Address is required');
     if (!cartItems || cartItems.length === 0) throw new Error('Cart is empty');
 
@@ -37,7 +37,34 @@ export class PaymentService {
     const FLAT_SHIPPING = 100;
     const shippingFee = itemsTotal > SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
     
-    const totalAmount = itemsTotal + shippingFee;
+    let totalAmount = itemsTotal + shippingFee;
+    let discountAmount = 0;
+
+    // Apply Promo if present
+    if (couponCode) {
+      const { createClient } = require('@/lib/supabase/server');
+      const supabase = createClient();
+      const { data: promo } = await supabase
+        .from('promotions')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .eq('is_active', true)
+        .single();
+        
+      if (promo && (!promo.valid_until || new Date(promo.valid_until) >= new Date())) {
+        if (promo.discount_type === 'percentage') {
+          discountAmount = totalAmount * (promo.discount_value / 100);
+        } else if (promo.discount_type === 'fixed') {
+          discountAmount = Math.min(totalAmount, promo.discount_value);
+        }
+        totalAmount -= discountAmount;
+      }
+    }
+
+    // Phase 2: Add 18% GST
+    const TAX_RATE = 0.18;
+    const taxAmount = totalAmount * TAX_RATE;
+    totalAmount += taxAmount;
 
     if (totalAmount <= 0) throw new Error('Invalid total amount');
 
@@ -65,6 +92,15 @@ export class PaymentService {
     }
 
     const dbOrderId = await this.paymentRepository.createPendingCheckout(buyerId, addressId, totalAmount);
+
+    // Update order with newly calculated tax and discount
+    const { createClient } = require('@/lib/supabase/server');
+    const supabase = createClient();
+    await supabase.from('orders').update({
+      tax_amount: taxAmount,
+      discount_amount: discountAmount,
+      promo_code: couponCode || null
+    }).eq('id', dbOrderId);
 
     if (paymentMethod === 'cod') {
       await this.paymentRepository.confirmCodCheckout(dbOrderId);

@@ -9,5 +9,6 @@ export const VerifyPaymentDto = z.object({
 
 export const CreateCheckoutDto = z.object({
   address_id: z.string().uuid('Invalid address ID'),
-  payment_method: z.enum(['razorpay', 'cod']).optional().default('razorpay')
+  payment_method: z.enum(['razorpay', 'cod']).optional().default('razorpay'),
+  coupon_code: z.string().optional()
 });

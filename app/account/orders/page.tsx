@@ -370,6 +370,7 @@ export default function OrderHistoryPage() {
 
         {/* ── Status filter tabs ─────────────────────────────────────────── */}
         <nav
+          data-tour-id="profile-orders"
           style={{
             display: 'flex',
             gap: 'var(--space-2)',

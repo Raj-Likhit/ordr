@@ -20,7 +20,7 @@ interface Address {
 }
 
 export default function CheckoutPage() {
-  const { cart, subtotal, cartCount } = useCart();
+  const { cart, subtotal, cartCount, discount, appliedPromo } = useCart();
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
@@ -131,7 +131,11 @@ export default function CheckoutPage() {
       const res = await fetch('/api/checkout/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address_id: selectedAddressId, payment_method: paymentMethod })
+        body: JSON.stringify({ 
+          address_id: selectedAddressId, 
+          payment_method: paymentMethod,
+          coupon_code: appliedPromo?.code 
+        })
       });
 
       const data = await res.json();
@@ -208,7 +212,9 @@ export default function CheckoutPage() {
   const SHIPPING_THRESHOLD = 5000;
   const FLAT_SHIPPING = 100;
   const shippingFee = subtotal > SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING;
-  const totalAmount = subtotal + shippingFee;
+  const baseTotal = subtotal + shippingFee - (discount || 0);
+  const taxAmount = baseTotal * 0.18;
+  const totalAmount = baseTotal + taxAmount;
 
   const fmt = (n: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -424,6 +430,16 @@ export default function CheckoutPage() {
               <div className="flex justify-between text-[var(--color-text-secondary)]">
                 <span>Shipping</span>
                 <span>{subtotal > 0 ? (shippingFee === 0 ? 'Free' : fmt(shippingFee)) : '—'}</span>
+              </div>
+              {discount > 0 && (
+                <div className="flex justify-between text-[var(--color-accent)]">
+                  <span>Discount</span>
+                  <span>-{fmt(discount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-[var(--color-text-secondary)]">
+                <span>Estimated Tax (18% GST)</span>
+                <span>{subtotal > 0 ? fmt(taxAmount) : '—'}</span>
               </div>
               <div className="flex justify-between font-medium text-[var(--text-body-lg)] pt-3 border-t border-[var(--color-border)] text-[var(--color-text-primary)]">
                 <span>Total</span>

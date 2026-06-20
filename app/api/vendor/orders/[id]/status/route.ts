@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import Razorpay from 'razorpay';
+import { notifyOrderStatusChanged } from '@/lib/notify';
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
@@ -21,7 +22,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // Verify sub-order belongs to this vendor
     const { data: subOrder, error: fetchError } = await supabase
       .from('sub_orders')
-      .select('*, order:orders(razorpay_payment_id)')
+      .select('*, order:orders(id, razorpay_payment_id, user_id)')
       .eq('id', subOrderId)
       .eq('vendor_id', user.id)
       .single();
@@ -38,6 +39,27 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     if (updateError) {
       throw updateError;
+    }
+
+    // Fetch buyer profile for notifications
+    const orderUserId = Array.isArray(subOrder.order) ? subOrder.order[0]?.user_id : subOrder.order?.user_id;
+    const orderIdStr = Array.isArray(subOrder.order) ? subOrder.order[0]?.id : subOrder.order?.id;
+    
+    if (orderUserId && orderIdStr) {
+      const { data: buyerProfile } = await supabase.from('profiles').select('*').eq('id', orderUserId).single();
+      const { data: vendorProfile } = await supabase.from('profiles').select('business_name').eq('id', user.id).single();
+      
+      if (buyerProfile && (buyerProfile.email || buyerProfile.phone)) {
+        await notifyOrderStatusChanged({
+          buyerEmail: buyerProfile.email || '',
+          buyerPhone: buyerProfile.phone,
+          buyerTelegramId: buyerProfile.telegram_chat_id,
+          orderId: orderIdStr,
+          subOrderId: subOrderId,
+          vendorName: vendorProfile?.business_name || 'Ordr Vendor',
+          newStatus: status,
+        });
+      }
     }
 
     // Escrow Release Logic if status is DELIVERED
