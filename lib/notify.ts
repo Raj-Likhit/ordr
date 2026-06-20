@@ -64,11 +64,55 @@ export async function sendTelegram(chatId: string, text: string) {
   }
 }
 
+// ── Twilio (SMS & WhatsApp) ───────────────────────────────────────────────────
+// Requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_NUMBER
+
+export async function sendTwilioMessage(to: string, body: string, isWhatsApp = false) {
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = isWhatsApp ? `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}` : process.env.TWILIO_PHONE_NUMBER;
+
+  if (!sid || !token || !fromNumber) {
+    console.warn(`[notify:sendTwilioMessage] Missing Twilio credentials or sender number for ${isWhatsApp ? 'WhatsApp' : 'SMS'} — skipping`);
+    return { success: false };
+  }
+
+  const toNumber = isWhatsApp && !to.startsWith('whatsapp:') ? `whatsapp:${to}` : to;
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
+  
+  const params = new URLSearchParams();
+  params.append('To', toNumber);
+  params.append('From', fromNumber);
+  params.append('Body', body);
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64'),
+      },
+      body: params.toString(),
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      console.error('[notify:sendTwilioMessage] Twilio error:', json);
+      return { success: false, error: json };
+    }
+    return { success: true, sid: json.sid };
+  } catch (err) {
+    console.error('[notify:sendTwilioMessage] Unexpected:', err);
+    return { success: false, error: err };
+  }
+}
+
 // ── Convenience: order status changed notification ────────────────────────────
 
 export async function notifyOrderStatusChanged({
   buyerEmail,
   buyerTelegramId,
+  buyerPhone,
   orderId,
   subOrderId,
   vendorName,
@@ -77,6 +121,7 @@ export async function notifyOrderStatusChanged({
 }: {
   buyerEmail: string;
   buyerTelegramId?: string;
+  buyerPhone?: string;
   orderId: string;
   subOrderId: string;
   vendorName: string;
@@ -125,6 +170,15 @@ export async function notifyOrderStatusChanged({
     await sendTelegram(
       buyerTelegramId,
       `🛍 *Ordr Order Update*\n\nYour order #${shortId} from *${vendorName}* is now *${statusLabel}*.${trackingId ? `\nTracking: \`${trackingId}\`` : ''}\n\n[View Order](${orderUrl})`
+    );
+  }
+
+  // WhatsApp (if phone available)
+  if (buyerPhone) {
+    await sendTwilioMessage(
+      buyerPhone,
+      `🛍 *Ordr Order Update*\n\nYour order #${shortId} from *${vendorName}* is now *${statusLabel}*.${trackingId ? `\nTracking: ${trackingId}` : ''}\n\nView Order: ${orderUrl}`,
+      true // isWhatsApp = true
     );
   }
 }

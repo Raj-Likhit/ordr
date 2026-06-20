@@ -28,8 +28,29 @@ export async function GET(request: Request) {
       }
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && data?.user) {
+      // Check if profile exists, if not create one
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', data.user.id)
+        .single();
+        
+      if (!profile) {
+        const role = searchParams.get('role') === 'vendor' ? 'vendor' : 'buyer';
+        await supabase.from('profiles').insert({
+          id: data.user.id,
+          role: role,
+          full_name: data.user.user_metadata?.full_name || 'Ordr User',
+        });
+        
+        // If they registered as a vendor, redirect to vendor dashboard
+        if (role === 'vendor' && next === '/account') {
+          return NextResponse.redirect(`${origin}/vendor`);
+        }
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
