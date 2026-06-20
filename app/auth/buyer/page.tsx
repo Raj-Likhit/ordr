@@ -49,10 +49,11 @@ function BuyerAuthForm() {
 
   const handleGoogleSignIn = async () => {
     try {
+      const redirectPath = searchParams.get("redirect") || "/";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`,
         },
       });
       if (error) throw error;
