@@ -20,6 +20,8 @@ export function ProductClientDetail({ product, children }: { product: any, child
   const [wishlistGroups, setWishlistGroups] = useState<any[]>([]);
   const [showWishlistDropdown, setShowWishlistDropdown] = useState(false);
   const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
+  const [newWishlistName, setNewWishlistName] = useState("");
+  const [isCreatingWishlist, setIsCreatingWishlist] = useState(false);
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const { recentlyViewed, addViewedProduct } = useRecentlyViewed();
@@ -51,6 +53,30 @@ export function ProductClientDetail({ product, children }: { product: any, child
     }
     return () => observer.disconnect();
   }, [product]);
+
+  const handleCreateWishlist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newWishlistName.trim()) return;
+    try {
+      const res = await fetch('/api/wishlists/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newWishlistName })
+      });
+      if (res.ok) {
+        const newGroup = await res.json();
+        setWishlistGroups([...wishlistGroups, newGroup]);
+        setNewWishlistName("");
+        setIsCreatingWishlist(false);
+        showToast({ message: "Wishlist created!", type: "success" });
+        handleSaveToWishlist(newGroup.id);
+      } else {
+        showToast({ message: "Failed to create wishlist", type: "error" });
+      }
+    } catch(err) {
+      showToast({ message: "Failed to create wishlist", type: "error" });
+    }
+  };
 
   const handleSaveToWishlist = async (groupId: string) => {
     try {
@@ -323,14 +349,36 @@ export function ProductClientDetail({ product, children }: { product: any, child
                 </button>
                 
                 {showWishlistDropdown && (
-                  <div className="absolute right-0 bottom-14 w-56 bg-white border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-xl z-50 overflow-hidden">
-                    <div className="px-4 py-3 bg-[var(--color-bg-dark)]/5 border-b border-[var(--color-border)]">
+                  <div className="absolute right-0 bottom-14 w-64 bg-white border border-[var(--color-border)] rounded-[var(--radius-md)] shadow-xl z-50 overflow-hidden">
+                    <div className="px-4 py-3 bg-[var(--color-bg-dark)]/5 border-b border-[var(--color-border)] flex justify-between items-center">
                       <h4 className="text-[var(--text-micro)] font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">Save to Wishlist</h4>
+                      {!isCreatingWishlist && (
+                        <button onClick={() => setIsCreatingWishlist(true)} className="text-[var(--text-micro)] text-[var(--color-accent)] font-medium uppercase tracking-wider hover:underline">
+                          + New
+                        </button>
+                      )}
                     </div>
-                    {wishlistGroups.length === 0 ? (
+                    
+                    {isCreatingWishlist ? (
+                      <form onSubmit={handleCreateWishlist} className="p-4 border-b border-[var(--color-border)] bg-[var(--color-bg-surface)]">
+                        <input 
+                          type="text" 
+                          autoFocus
+                          placeholder="Wishlist name..." 
+                          className="w-full text-[var(--text-small)] px-2 py-1.5 border border-[var(--color-border)] rounded mb-2 focus:outline-none focus:border-[var(--color-accent)]"
+                          value={newWishlistName}
+                          onChange={(e) => setNewWishlistName(e.target.value)}
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button type="button" onClick={() => setIsCreatingWishlist(false)} className="text-[var(--text-micro)] text-[var(--color-text-muted)] hover:text-black">Cancel</button>
+                          <button type="submit" className="text-[var(--text-micro)] text-white bg-[var(--color-accent)] px-2 py-1 rounded font-medium">Create & Save</button>
+                        </div>
+                      </form>
+                    ) : null}
+
+                    {wishlistGroups.length === 0 && !isCreatingWishlist ? (
                       <div className="p-4 text-[var(--text-small)] text-center text-[var(--color-text-muted)]">
-                        No wishlists found. <br />
-                        <Link href="/account/wishlist" className="text-[var(--color-accent)] underline mt-1 inline-block">Create one</Link>
+                        No wishlists found.
                       </div>
                     ) : (
                       <div className="max-h-48 overflow-y-auto">

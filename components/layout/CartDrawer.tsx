@@ -46,7 +46,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           <p className="text-[var(--color-text-secondary)] font-body mb-6">
             Your cart is quiet. Let&apos;s make some noise.
           </p>
-          <Button variant="primary" onClick={onClose}>
+          <Button variant="primary" onClick={() => { onClose(); router.push('/shop'); }}>
             Browse Products
           </Button>
         </div>

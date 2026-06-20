@@ -26,7 +26,7 @@ export async function submitReview(formData: FormData) {
     .select('id')
     .eq('product_id', productId)
     .eq('buyer_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (existingReview) {
     return { error: 'You have already reviewed this product.' };
