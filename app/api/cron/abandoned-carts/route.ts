@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
-import { renderToStaticMarkup } from 'react-dom/server';
 import AbandonedCartEmail from '@/emails/AbandonedCart';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -74,21 +73,17 @@ export async function GET(request: Request) {
         };
       });
 
-      const htmlContent = renderToStaticMarkup(
-        AbandonedCartEmail({
-          buyerName: buyer.full_name || 'Customer',
-          cartUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://ordr-green.vercel.app'}/cart`,
-          items
-        })
-      );
-
       // Send email
       if (process.env.RESEND_API_KEY) {
         await resend.emails.send({
           from: 'Ordr <hello@ordr.com>',
           to: buyer.email,
           subject: 'Did you forget something? 🛒',
-          html: htmlContent,
+          react: AbandonedCartEmail({
+            buyerName: buyer.full_name || 'Customer',
+            cartUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://ordr-green.vercel.app'}/cart`,
+            items
+          }),
         });
       }
 
