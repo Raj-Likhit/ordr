@@ -3,8 +3,6 @@ import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 import AbandonedCartEmail from '@/emails/AbandonedCart';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function GET(request: Request) {
   try {
     // Verify auth mechanism (e.g. Vercel Cron Secret)
@@ -75,6 +73,7 @@ export async function GET(request: Request) {
 
       // Send email
       if (process.env.RESEND_API_KEY) {
+        const resend = new Resend(process.env.RESEND_API_KEY);
         await resend.emails.send({
           from: 'Ordr <hello@ordr.com>',
           to: buyer.email,

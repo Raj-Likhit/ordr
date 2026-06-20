@@ -47,7 +47,7 @@ export function PhoneInput({ value, onChange, required, disabled }: PhoneInputPr
         setLocalNumber(value);
       }
     }
-  }, [value]);
+  }, [value, selectedCountry.dial_code, localNumber]);
 
   useEffect(() => {
     // Close dropdown on click outside
