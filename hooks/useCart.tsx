@@ -80,14 +80,12 @@ export const useCartStore = create<CartState>()(
         
         set({ cart: { ...cart, items: newItems }, productMap: newProductMap });
 
-        // Optimistic UI: If cart.id exists, it's a DB cart, so sync in background
-        if (cart.id) {
-          fetch("/api/cart/items", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ variant_id: variantId, quantity }),
-          }).catch(e => console.error("Failed to sync cart addition", e));
-        }
+        // Optimistic UI: Sync in background. Backend will use user session to find/create cart.
+        fetch("/api/cart/items", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ variant_id: variantId, quantity }),
+        }).catch(e => console.error("Failed to sync cart addition", e));
       },
 
       updateQuantity: async (itemId, quantity) => {
@@ -102,7 +100,7 @@ export const useCartStore = create<CartState>()(
         );
         set({ cart: { ...cart, items: newItems } });
 
-        if (cart.id && !itemId.startsWith('local-')) {
+        if (!itemId.startsWith('local-')) {
           fetch(`/api/cart/items/${itemId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -116,7 +114,7 @@ export const useCartStore = create<CartState>()(
         const newItems = cart.items.filter(item => item.id !== itemId);
         set({ cart: { ...cart, items: newItems } });
 
-        if (cart.id && !itemId.startsWith('local-')) {
+        if (!itemId.startsWith('local-')) {
           fetch(`/api/cart/items/${itemId}`, {
             method: "DELETE",
           }).catch(e => console.error("Failed to sync cart removal", e));
@@ -124,7 +122,7 @@ export const useCartStore = create<CartState>()(
       },
 
       clearCart: async () => {
-        set({ cart: { items: [] } });
+        set((state) => ({ cart: { ...state.cart, items: [] } }));
       },
 
       fetchDBCart: async () => {

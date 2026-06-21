@@ -38,16 +38,17 @@ export class CartRepository implements ICartRepository {
 
   async findByBuyerId(buyerId: string): Promise<Cart | null> {
     const supabase = createClient();
-    const { data, error } = await supabase.from('carts').select('*').eq('buyer_id', buyerId).single();
-    if (error && error.code !== 'PGRST116') throw error;
+    const { data, error } = await supabase.from('carts').select('*').eq('buyer_id', buyerId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    if (error) throw error;
     return data as Cart | null;
   }
 
   async getCartWithItems(buyerId: string): Promise<{ id: string, items: CartItem[] } | null> {
     const supabase = createClient();
-    let { data: cart, error: cartError } = await supabase.from('carts').select('id').eq('buyer_id', buyerId).single();
+    let { data: cart, error: cartError } = await supabase.from('carts').select('id').eq('buyer_id', buyerId).order('created_at', { ascending: false }).limit(1).maybeSingle();
     
-    if (cartError && cartError.code === 'PGRST116') {
+    if (!cart && !cartError) {
+      // Cart does not exist, create it
       const { data: newCart, error: insertError } = await supabase.from('carts').insert({ buyer_id: buyerId }).select('id').single();
       if (insertError) throw insertError;
       cart = newCart;

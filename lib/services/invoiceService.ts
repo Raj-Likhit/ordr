@@ -15,7 +15,7 @@ export async function generateInvoice(subOrderId: string) {
       *,
       order:orders (
         buyer_id,
-        address:addresses ( line1, line2, city, state, pincode ),
+        address:user_addresses ( line1:address_line1, line2:address_line2, city, state, pincode ),
         buyer:profiles!orders_buyer_id_fkey ( full_name, email )
       ),
       vendor:vendor_profiles ( id, business_name, store_address )

@@ -83,7 +83,7 @@ export async function advanceOrderStatus(
       subOrderId,
       recipientId: buyerId,
       email: buyerEmail,
-      phone_wa: buyerPhone
+      phone: buyerPhone
     }).catch(console.error);
   }
 

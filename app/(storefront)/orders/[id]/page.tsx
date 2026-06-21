@@ -17,7 +17,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
     .select(`
       *,
       vendor:vendor_profiles ( business_name, email, phone ),
-      order:orders ( buyer_id, address:addresses(line1, line2, city, state, pincode) )
+      order:orders ( buyer_id, address:user_addresses(line1:address_line1, line2:address_line2, city, state, pincode) )
     `)
     .eq('id', params.id)
     .single();
@@ -49,7 +49,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display text-3xl font-light text-[var(--color-text-primary)] mb-2">Order Details</h1>
+          <h1 className="font-display text-3xl font-light text-[var(--color-text-primary)] mb-2">Shipment Details</h1>
           <p className="text-[var(--color-text-secondary)] font-mono">ID: {subOrder.id}</p>
         </div>
         <InvoiceDownload subOrderId={subOrder.id} status={subOrder.status} />

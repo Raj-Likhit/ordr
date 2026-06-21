@@ -42,7 +42,7 @@ export async function POST(request: Request) {
         total_amount,
         created_at,
         razorpay_payment_id,
-        address:addresses(line1, line2, city, state, pincode),
+        address:user_addresses(line1:address_line1, line2:address_line2, city, state, pincode),
         buyer:profiles(id, full_name),
         sub_orders(
           id,

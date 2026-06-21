@@ -16,7 +16,10 @@ export default async function MyOrdersPage() {
     .from('orders')
     .select(`
       id, created_at, total_amount, payment_status,
-      sub_orders(id, status, subtotal, tracking_id, vendor:vendor_profiles(business_name))
+      sub_orders(
+        id, status, subtotal, tracking_id, vendor:vendor_profiles(business_name),
+        order_items(quantity, variant:product_variants(product:products(title)))
+      )
     `)
     .eq('buyer_id', user.id)
     .order('created_at', { ascending: false });
@@ -61,13 +64,22 @@ export default async function MyOrdersPage() {
                     const vendor = Array.isArray(sub.vendor) ? sub.vendor[0] : sub.vendor;
                     return (
                       <div key={sub.id} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 border border-[var(--color-border)] rounded-[var(--radius-md)] hover:bg-[var(--color-bg)] transition-colors">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-[var(--color-text-primary)] mb-1">
                             Sold by: {vendor?.business_name || 'Vendor'}
                           </p>
-                          <p className="text-[var(--text-small)] text-[var(--color-text-secondary)]">
-                            Sub-order ID: {sub.id.slice(0,8).toUpperCase()}
+                          <p className="text-[var(--text-small)] text-[var(--color-text-secondary)] mb-2">
+                            Shipment ID: {sub.id.slice(0,8).toUpperCase()}
                           </p>
+                          {sub.order_items && sub.order_items.length > 0 && (
+                            <div className="text-[var(--text-small)] text-[var(--color-text-secondary)] bg-[var(--color-bg)] p-2 rounded border border-[var(--color-border)] mt-2">
+                              {sub.order_items.map((item: any) => {
+                                const variant = Array.isArray(item.variant) ? item.variant[0] : item.variant;
+                                const product = Array.isArray(variant?.product) ? variant.product[0] : variant?.product;
+                                return `${item.quantity}x ${product?.title || 'Product'}`;
+                              }).join(', ')}
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-4">
                           <span className="px-3 py-1 rounded-[var(--radius-sm)] bg-gray-100 text-gray-800 text-[10px] font-semibold uppercase tracking-wider border border-gray-200">

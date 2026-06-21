@@ -51,7 +51,7 @@ async function reviewVendor(formData: FormData) {
         subOrderId: 'N/A',
         recipientId: vendorId,
         email: (updated.profiles as any)?.email,
-        phone_wa: (updated.profiles as any)?.phone
+        phone: (updated.profiles as any)?.phone
       }).catch(console.error);
     }
   }

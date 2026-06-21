@@ -95,7 +95,7 @@ export class OrderService {
         subOrderId,
         recipientId: buyerId,
         email: buyerEmail,
-        phone_wa: buyerPhone
+        phone: buyerPhone
       }).catch(console.error);
     }
 

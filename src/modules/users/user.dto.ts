@@ -13,7 +13,7 @@ export type UpdateProfileDTO = z.infer<typeof updateProfileSchema>;
 
 export const createAddressSchema = z.object({
   full_name: z.string().min(1, "Full name is required"),
-  phone: z.string().optional(),
+  phone: z.string().min(1, "Phone number is required"),
   address_line1: z.string().min(1, "Address line 1 is required"),
   address_line2: z.string().optional(),
   city: z.string().min(1, "City is required"),

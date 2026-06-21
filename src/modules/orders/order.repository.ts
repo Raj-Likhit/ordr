@@ -46,7 +46,7 @@ export class OrderRepository implements IOrderRepository {
         payment_status,
         razorpay_order_id,
         created_at,
-        address:addresses(line1, city, state, pincode),
+        address:user_addresses(line1:address_line1, city, state, pincode),
         sub_orders(
           id,
           status,
@@ -74,7 +74,7 @@ export class OrderRepository implements IOrderRepository {
         razorpay_order_id,
         razorpay_payment_id,
         created_at,
-        address:addresses(id, label, line1, line2, city, state, pincode),
+        address:user_addresses(id, line1:address_line1, line2:address_line2, city, state, pincode),
         sub_orders(
           id,
           status,
@@ -176,7 +176,7 @@ export class OrderRepository implements IOrderRepository {
           total_amount,
           payment_status,
           created_at,
-          address:addresses(line1, city, state, pincode),
+          address:user_addresses(line1:address_line1, city, state, pincode),
           buyer:profiles(id, full_name, phone)
         ),
         order_items(

@@ -52,7 +52,7 @@ async function processReturn(formData: FormData) {
       subOrderId: ret.sub_order_id,
       recipientId: buyerId,
       email: buyerProfile?.email,
-      phone_wa: buyerProfile?.phone
+      phone: buyerProfile?.phone
     }).catch(console.error);
   }
 

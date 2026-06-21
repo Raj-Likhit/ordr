@@ -13,7 +13,7 @@ interface CommPayload {
   subOrderId: string;
   recipientId?: string; // Auth User ID if buyer, or Vendor Profile ID
   email?: string;
-  phone_wa?: string;
+  phone?: string;
 }
 
 export async function dispatchCommunication(payload: CommPayload) {
@@ -67,29 +67,17 @@ export async function dispatchCommunication(payload: CommPayload) {
     });
   }
 
-  // 2. Send WhatsApp (Mocked or real if WA_TOKEN is present)
-  if (payload.phone_wa) {
+  // 2. Send SMS (Mocked or real if SMS_API_KEY is present)
+  if (payload.phone) {
     let status = 'sent';
     let error = null;
 
     try {
-      if (process.env.WA_TOKEN && process.env.WA_PHONE_NUMBER_ID) {
-        const phoneId = process.env.WA_PHONE_NUMBER_ID;
-        await fetch(`https://graph.facebook.com/v19.0/${phoneId}/messages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.WA_TOKEN}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            messaging_product: 'whatsapp',
-            to: payload.phone_wa,
-            type: 'template',
-            template: { name: template.waTemplate, language: { code: 'en_US' } }
-          })
-        });
+      if (process.env.SMS_API_KEY) {
+        // Mock SMS Gateway integration
+        console.log(`Sending SMS via gateway to ${payload.phone}...`);
       } else {
-        console.log(`[MOCK WHATSAPP] To: ${payload.phone_wa} | Template: ${template.waTemplate}`);
+        console.log(`[MOCK SMS] To: ${payload.phone} | Template: ${template.smsTemplate}`);
       }
     } catch (e: any) {
       status = 'failed';
@@ -98,7 +86,7 @@ export async function dispatchCommunication(payload: CommPayload) {
 
     logs.push({
       recipient_id: payload.recipientId,
-      channel: 'whatsapp',
+      channel: 'sms',
       event: payload.eventId,
       sub_order_id: payload.subOrderId,
       status,

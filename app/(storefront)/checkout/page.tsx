@@ -33,6 +33,7 @@ export default function CheckoutPage() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
   const [newAddress, setNewAddress] = useState({
     full_name: '',
+    phone: '',
     address_line1: '',
     address_line2: '',
     city: '',
@@ -105,7 +106,7 @@ export default function CheckoutPage() {
       setAddresses([data, ...addresses]);
       setSelectedAddressId(data.id);
       setShowNewAddressForm(false);
-      setNewAddress({ full_name: '', address_line1: '', address_line2: '', city: '', state: '', pincode: '', country: 'India' });
+      setNewAddress({ full_name: '', phone: '', address_line1: '', address_line2: '', city: '', state: '', pincode: '', country: 'India' });
       showToast({ message: "Address saved", type: "success" });
     } catch (e: any) {
       showToast({ message: e.message || "Could not save address", type: "error" });
@@ -290,6 +291,10 @@ export default function CheckoutPage() {
                   <div>
                     <label className="block text-[var(--text-small)] font-medium mb-1">Full Name</label>
                     <input required value={newAddress.full_name} onChange={(e) => setNewAddress({...newAddress, full_name: e.target.value})} type="text" className="w-full border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-[var(--color-accent)]" />
+                  </div>
+                  <div>
+                    <label className="block text-[var(--text-small)] font-medium mb-1">Phone Number</label>
+                    <input required value={newAddress.phone} onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})} type="tel" className="w-full border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-[var(--color-accent)]" />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-[var(--text-small)] font-medium mb-1">Address Line 1</label>
