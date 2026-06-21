@@ -536,7 +536,7 @@ function SubOrderCard({
               marginBottom: 'var(--space-3)',
             }}
           >
-            Items ({so.order_items.length})
+            Items ({so.order_items.reduce((sum, item) => sum + item.quantity, 0)})
           </h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 var(--space-5)' }}>
             {so.order_items.map((item, i) => {

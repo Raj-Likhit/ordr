@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     const orderService = new OrderService(new OrderRepository());
     const enriched = await orderService.getVendorOrders(user.id, statusFilter);
 
-    return NextResponse.json({ orders: enriched });
+    return NextResponse.json({ subOrders: enriched });
   } catch (err: any) {
     console.error('[GET /api/vendor/orders] unexpected:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

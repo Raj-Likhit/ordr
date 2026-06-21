@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Package, ShoppingCart, DollarSign, Settings, Store, Tags, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui";
 
-export function VendorSidebar() {
+export function VendorSidebar({ businessName = "Vendor" }: { businessName?: string }) {
   const pathname = usePathname();
 
   const navLinks = [
@@ -28,7 +28,7 @@ export function VendorSidebar() {
         <div className="flex flex-col gap-2 mb-8">
           <div className="flex items-center gap-2 text-[var(--text-small)]">
             <Store size={16} className="text-[var(--color-text-muted)]" />
-            <span className="font-medium">Artisan Co.</span>
+            <span className="font-medium">{businessName}</span>
           </div>
           <div>
             <Badge variant="approved">APPROVED</Badge>

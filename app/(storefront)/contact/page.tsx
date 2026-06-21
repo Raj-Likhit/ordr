@@ -1,4 +1,15 @@
+'use client';
+
+import { FormEvent } from 'react';
+import toast from 'react-hot-toast';
+
 export default function ContactPage() {
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    toast.success('Your message has been sent successfully!');
+    (e.target as HTMLFormElement).reset();
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-20 min-h-screen">
       <h1 className="font-display text-4xl md:text-5xl tracking-widest uppercase mb-6 text-[var(--color-text-primary)]">
@@ -8,15 +19,15 @@ export default function ContactPage() {
         We&apos;re here to help. Reach out to us for any inquiries regarding your orders, vendor accounts, or general questions.
       </p>
 
-      <form className="space-y-6">
+      <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="block font-accent text-[var(--text-small)] uppercase tracking-wider text-[var(--color-text-primary)]">Name</label>
-            <input type="text" className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-black transition-colors" placeholder="Your name" />
+            <input type="text" required className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-black transition-colors" placeholder="Your name" />
           </div>
           <div className="space-y-2">
             <label className="block font-accent text-[var(--text-small)] uppercase tracking-wider text-[var(--color-text-primary)]">Email</label>
-            <input type="email" className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-black transition-colors" placeholder="Your email address" />
+            <input type="email" required className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-black transition-colors" placeholder="Your email address" />
           </div>
         </div>
         <div className="space-y-2">
@@ -30,9 +41,9 @@ export default function ContactPage() {
         </div>
         <div className="space-y-2">
           <label className="block font-accent text-[var(--text-small)] uppercase tracking-wider text-[var(--color-text-primary)]">Message</label>
-          <textarea rows={6} className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-black transition-colors resize-none" placeholder="How can we help you?"></textarea>
+          <textarea rows={6} required className="w-full bg-[var(--color-bg-surface)] border border-[var(--color-border)] rounded-[var(--radius-sm)] p-3 focus:outline-none focus:border-black transition-colors resize-none" placeholder="How can we help you?"></textarea>
         </div>
-        <button type="button" className="bg-black text-white px-8 py-4 uppercase font-accent tracking-widest text-[var(--text-small)] hover:bg-gray-800 transition-colors rounded-[var(--radius-sm)] w-full md:w-auto">
+        <button type="submit" className="bg-black text-white px-8 py-4 uppercase font-accent tracking-widest text-[var(--text-small)] hover:bg-gray-800 transition-colors rounded-[var(--radius-sm)] w-full md:w-auto cursor-pointer">
           Send Message
         </button>
       </form>

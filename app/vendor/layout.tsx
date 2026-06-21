@@ -16,14 +16,14 @@ export default async function VendorLayout({
     redirect("/auth/vendor");
   }
 
-  // Fetch vendor profile
   const { data: vendorProfile } = await supabase
     .from("vendor_profiles")
-    .select("status")
+    .select("status, business_name")
     .eq("id", user.id)
     .single();
 
   const status = vendorProfile?.status || "pending";
+  const businessName = vendorProfile?.business_name || "Vendor";
   const headersList = headers();
   const pathname = headersList.get("x-invoke-path") || "";
   
@@ -41,7 +41,7 @@ export default async function VendorLayout({
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]">
-      {!isOnboardingRoute && <VendorSidebar />}
+      {!isOnboardingRoute && <VendorSidebar businessName={businessName} />}
       <main className={isOnboardingRoute ? "p-8" : "ml-64 p-8"}>
         {children}
       </main>

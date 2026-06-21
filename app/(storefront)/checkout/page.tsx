@@ -20,7 +20,7 @@ interface Address {
 }
 
 export default function CheckoutPage() {
-  const { cart, subtotal, cartCount, discount, appliedPromo } = useCart();
+  const { cart, subtotal, cartCount, discount, appliedPromo, clearCart } = useCart();
   const { user, loading: authLoading } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
@@ -146,6 +146,7 @@ export default function CheckoutPage() {
 
       // If COD, we are done
       if (paymentMethod === 'cod') {
+        clearCart();
         router.push(`/order-confirmation/${data.dbOrderId}`);
         return;
       }
@@ -173,6 +174,7 @@ export default function CheckoutPage() {
             });
 
             if (verifyRes.ok) {
+              clearCart();
               // Redirect to success page
               router.push(`/order-confirmation/${data.dbOrderId}`);
             } else {

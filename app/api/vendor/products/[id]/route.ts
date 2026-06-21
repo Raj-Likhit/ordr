@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ProductService } from "@/src/modules/products/product.service";
 import { ProductRepository } from "@/src/modules/products/product.repository";
+import { revalidatePath } from "next/cache";
 async function resolveVendorProduct(userId: string, productId: string) {
   const supabase = createClient();
   const { data: vendorProfile } = await supabase
@@ -66,6 +67,13 @@ export async function PATCH(
 
     try {
       const updated = await result.productService.updateProduct(result.vendorProfile.id, params.id, body);
+      
+      // Revalidate cache so changes reflect in real-time
+      if (updated?.slug) {
+        revalidatePath(`/product/${updated.slug}`);
+      }
+      revalidatePath('/shop');
+
       return NextResponse.json({ product: updated });
     } catch (e: any) {
       if (e.message === "No fields to update") return NextResponse.json({ error: e.message }, { status: 400 });

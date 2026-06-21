@@ -29,7 +29,7 @@ export class OrderService {
       else displayStatus = 'placed';
 
       const totalItems = subOrders.reduce(
-        (acc: number, so: any) => acc + (so.order_items?.length ?? 0),
+        (acc: number, so: any) => acc + (so.order_items?.reduce((sum: number, item: any) => sum + item.quantity, 0) ?? 0),
         0
       );
 

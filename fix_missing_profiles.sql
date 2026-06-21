@@ -5,12 +5,11 @@
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, avatar_url, onboarding_status)
+  INSERT INTO public.profiles (id, full_name, role)
   VALUES (
     new.id, 
-    new.raw_user_meta_data->>'full_name', 
-    new.raw_user_meta_data->>'avatar_url',
-    'pending'
+    new.raw_user_meta_data->>'full_name',
+    'buyer'
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN new;
@@ -24,12 +23,11 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 3. Backfill any existing users that are missing from the profiles table
-INSERT INTO public.profiles (id, full_name, avatar_url, onboarding_status)
+INSERT INTO public.profiles (id, full_name, role)
 SELECT 
   id, 
-  raw_user_meta_data->>'full_name', 
-  raw_user_meta_data->>'avatar_url',
-  'completed'
+  raw_user_meta_data->>'full_name',
+  'buyer'
 FROM auth.users
 WHERE id NOT IN (SELECT id FROM public.profiles)
 ON CONFLICT (id) DO NOTHING;

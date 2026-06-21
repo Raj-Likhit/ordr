@@ -36,7 +36,7 @@ export default function OrderConfirmationPage({ params }: { params: { id: string
       </section>
 
       <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-        <Link href="/orders" className="px-8 py-4 border border-[var(--color-border-strong)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-sm)] font-medium transition-colors focus:outline-none focus:ring-4 focus:ring-[var(--color-border)]">
+        <Link href="/account/orders" className="px-8 py-4 border border-[var(--color-border-strong)] text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-sm)] font-medium transition-colors focus:outline-none focus:ring-4 focus:ring-[var(--color-border)]">
           View Order Status
         </Link>
         <Link href="/shop" className="px-8 py-4 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white rounded-[var(--radius-sm)] font-medium transition-colors focus:outline-none focus:ring-4 focus:ring-[var(--color-accent-subtle)]">
